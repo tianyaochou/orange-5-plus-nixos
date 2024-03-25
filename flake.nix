@@ -20,11 +20,11 @@
         }; in
         stdenv.mkDerivation {
           name = "u-boot-orangepi-5-plus";
-          version = "2024.1";
+          version = "git-rk3588-spi-boot";
           src = fetchGit {
             url = "https://github.com/u-boot/u-boot";
-            name = "v2024.0";
-            rev = "866ca972d6c3cabeaf6dbac431e8e08bb30b3c8e";
+            name = "rk3588-spi-boot";
+            rev = "f3c979dd0053c082d2df170446923e7ce5edbc2d";
           };
           nativeBuildInputs = [
             ncurses
@@ -53,15 +53,13 @@
           installPhase = ''
             mkdir $out
             cp u-boot-rockchip.bin $out
-            mkdir $out/tools
-            cp tools/mkimage $out/tools
           '';
         };
       packages.kernel-armbian = with pkgs; ((linuxManualConfig {
         version = "5.10.160-armbian";
         modDirVersion = "5.10.160";
 
-        configfile = ./rk3588_linux; # rockchip_linux_defconfig + rk3588_linux.config with CONFIG_ANDROID=n CONFIG_AUTOFS_FS=y and CONFIG_ATA_PIIX=y
+        configfile = ./rk3588_linux; # rockchip_linux_defconfig + rk3588_linux.config with CONFIG_ANDROID=n CONFIG_AUTOFS_FS=y CONFIG_SENSORS_PWM_FAN=y CONFIG_R8125=y
         allowImportFromDerivation = true; # Have to be true so linuxManualConfig will parse the configfile as a nix attrset, so assertions can be checked
 
         src = fetchgit {
@@ -78,7 +76,7 @@
         specialArgs = {
           inherit inputs;
           pkgs = inputs.nixpkgs.legacyPackages.${system};
-          flakePackages = self.packages.${system};
+          packages = self.packages.${system};
         };
         modules = [
           ./orangepi.nix
